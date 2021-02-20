@@ -20,7 +20,8 @@ go get github.com/subosito/gotenv
 ## Usage
  
 ```bash
+mkdir go-api
 git clone https://github.com/sohey-dr/go-api.git
-cd examples
+cd go-api
 go run main.go
 ```
