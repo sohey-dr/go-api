@@ -2,12 +2,21 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gorilla/mux"
 	_"github.com/go-sql-driver/mysql"
 )
+
+func errorInResponse(w http.ResponseWriter, status int, error Error) {
+	w.WriteHeader(status) // 400 とか 500 などの HTTP status コードが入る
+	json.NewEncoder(w).Encode(error)
+	return
+}
 
 func createUser(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("successfully called createUser"))
@@ -43,7 +52,6 @@ func main() {
 }
 
 type User struct {
-	// 大文字だと Public 扱い
 	ID       int    `json:"id"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
