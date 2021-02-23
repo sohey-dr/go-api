@@ -25,19 +25,18 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	// r.body に何が帰ってくるか確認
 	fmt.Println(r.Body)
 
-	// https://golang.org/pkg/encoding/json/#NewDecoder
 	json.NewDecoder(r.Body).Decode(&user)
 
 	if user.Email == "" {
-			error.Message = "Email は必須です。"
-			errorInResponse(w, http.StatusBadRequest, error)
-			return
+		error.Message = "Email は必須です。"
+		errorInResponse(w, http.StatusBadRequest, error)
+		return
 	}
 
 	if user.Password == "" {
-			error.Message = "パスワードは必須です。"
-			errorInResponse(w, http.StatusBadRequest, error)
-			return
+		error.Message = "パスワードは必須です。"
+		errorInResponse(w, http.StatusBadRequest, error)
+		return
 	}
 
 	// user に何が格納されているのか
