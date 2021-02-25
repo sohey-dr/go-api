@@ -11,7 +11,7 @@
 ```bash
 go get -u github.com/gorilla/mux
 go get github.com/dgrijalva/jwt-go
-go get github.com/lib/pq
+go get github.com/go-sql-driver/mysql
 go get -u github.com/davecgh/go-spew/spew
 go get -u golang.org/x/crypto/bcrypt
 go get github.com/subosito/gotenv
