@@ -79,7 +79,34 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("successfully called getUser"))
+	var user User
+	var error Error
+
+	json.NewDecoder(r.Body).Decode(&user)
+
+	if user.Email == "" {
+			error.Message = "Email は必須です。"
+			errorInResponse(w, http.StatusBadRequest, error)
+			return
+	}
+
+	if user.Password == "" {
+			error.Message = "パスワードは、必須です。"
+			errorInResponse(w, http.StatusBadRequest, error)
+	}
+
+	// 認証キー(Emal)のユーザー情報をDBから取得
+	row := db.QueryRow("SELECT * FROM USERS WHERE email=$1;", user.Email)
+	err := row.Scan(&user.ID, &user.Email, &user.Password)
+
+	if err != nil {
+			if err == sql.ErrNoRows { // https://golang.org/pkg/database/sql/#pkg-variables
+					error.Message = "ユーザが存在しません。"
+					errorInResponse(w, http.StatusBadRequest, error)
+			} else {
+					log.Fatal(err)
+			}
+	}
 }
 
 var Db *sql.DB
