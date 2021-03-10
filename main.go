@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	_"github.com/go-sql-driver/mysql"
 )
