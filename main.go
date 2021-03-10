@@ -18,6 +18,36 @@ func errorInResponse(w http.ResponseWriter, status int, error Error) {
 	return
 }
 
+func createToken(user User) (string, error) {
+	var err error
+
+	// 鍵となる文字列(多分なんでもいい)
+	secret := "secret"
+
+	// Token を作成
+	// jwt -> JSON Web Token - JSON をセキュアにやり取りするための仕様
+	// jwtの構造 -> {Base64 encoded Header}.{Base64 encoded Payload}.{Signature}
+	// HS254 -> 証明生成用(https://ja.wikipedia.org/wiki/JSON_Web_Token)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"email": user.Email,
+			"iss":   "__init__", // JWT の発行者が入る(文字列(__init__)は任意)
+	})
+
+ //Dumpを吐く
+	spew.Dump(token)
+
+	tokenString, err := token.SignedString([]byte(secret))
+
+	fmt.Println("-----------------------------")
+	fmt.Println("tokenString:", tokenString)
+
+	if err != nil {
+			log.Fatal(err)
+	}
+
+	return tokenString, nil
+}
+
 func createUser(w http.ResponseWriter, r *http.Request) {
 
 	// r.body に何が帰ってくるか確認
