@@ -9,8 +9,8 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/dgrijalva/jwt-go"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	_"github.com/go-sql-driver/mysql"
 )
 
 func errorInResponse(w http.ResponseWriter, status int, error Error) {
@@ -30,11 +30,11 @@ func createToken(user User) (string, error) {
 	// jwtの構造 -> {Base64 encoded Header}.{Base64 encoded Payload}.{Signature}
 	// HS254 -> 証明生成用(https://ja.wikipedia.org/wiki/JSON_Web_Token)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"email": user.Email,
-			"iss":   "__init__", // JWT の発行者が入る(文字列(__init__)は任意)
+		"name": user.Name,
+		"iss":  "__init__", // JWT の発行者が入る(文字列(__init__)は任意)
 	})
 
- //Dumpを吐く
+	//Dumpを吐く
 	spew.Dump(token)
 
 	tokenString, err := token.SignedString([]byte(secret))
@@ -43,7 +43,7 @@ func createToken(user User) (string, error) {
 	fmt.Println("tokenString:", tokenString)
 
 	if err != nil {
-			log.Fatal(err)
+		log.Fatal(err)
 	}
 
 	return tokenString, nil
@@ -57,19 +57,19 @@ func createUser(w http.ResponseWriter, r *http.Request) {
 	var user User
 	json.NewDecoder(r.Body).Decode(&user)
 
-	if user.Email == "" {
+	if user.Name == "" {
 		var error Error
-		error.Message = "Email は必須です。"
+		error.Message = "Name は必須です。"
 		errorInResponse(w, http.StatusBadRequest, error)
 		return
 	}
 
-	if user.Password == "" {
-		var error Error
-		error.Message = "パスワードは必須です。"
-		errorInResponse(w, http.StatusBadRequest, error)
-		return
-	}
+	// if user.Password == "" {
+	// 	var error Error
+	// 	error.Message = "パスワードは必須です。"
+	// 	errorInResponse(w, http.StatusBadRequest, error)
+	// 	return
+	// }
 
 	// user に何が格納されているのか
 	fmt.Println(user)
@@ -85,60 +85,60 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 
 	json.NewDecoder(r.Body).Decode(&user)
 
-	if user.Email == "" {
-			error.Message = "Email は必須です。"
-			errorInResponse(w, http.StatusBadRequest, error)
-			return
+	if user.Name == "" {
+		error.Message = "Email は必須です。"
+		errorInResponse(w, http.StatusBadRequest, error)
+		return
 	}
 
-	if user.Password == "" {
-			error.Message = "パスワードは、必須です。"
-			errorInResponse(w, http.StatusBadRequest, error)
-	}
+	// if user.Password == "" {
+	// 	error.Message = "パスワードは、必須です。"
+	// 	errorInResponse(w, http.StatusBadRequest, error)
+	// }
 
 	// 認証キー(Emal)のユーザー情報をDBから取得
-	row := Db.QueryRow("SELECT * FROM USERS WHERE email=$1;", user.Email)
-	err := row.Scan(&user.ID, &user.Email, &user.Password)
+	row := Db.QueryRow("SELECT * FROM USERS WHERE email=$1;", user.Name)
+	err := row.Scan(&user.ID, &user.Name)
 
 	if err != nil {
-			if err == sql.ErrNoRows { // https://golang.org/pkg/database/sql/#pkg-variables
-					error.Message = "ユーザが存在しません。"
-					errorInResponse(w, http.StatusBadRequest, error)
-			} else {
-					log.Fatal(err)
-			}
+		if err == sql.ErrNoRows { // https://golang.org/pkg/database/sql/#pkg-variables
+			error.Message = "ユーザが存在しません。"
+			errorInResponse(w, http.StatusBadRequest, error)
+		} else {
+			log.Fatal(err)
+		}
 	}
 }
 
 var Db *sql.DB
+
 func main() {
 
-    var err error
-    Db, err = sql.Open("mysql", "username:password@/techtrain_go_development")
-    if err != nil {
-        log.Fatal("DBエラー")
-    }
+	var err error
+	Db, err = sql.Open("mysql", "username:password@/techtrain_go_development")
+	if err != nil {
+		log.Fatal("DBエラー")
+	}
 
-    err = Db.Ping()
+	err = Db.Ping()
 
-    if err != nil {
-        log.Fatal(err)
-    }
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    router := mux.NewRouter()
+	router := mux.NewRouter()
 
-    router.HandleFunc("/user/create", createUser).Methods("POST")
-    router.HandleFunc("/user/get", getUser).Methods("POST")
+	router.HandleFunc("/user/create", createUser).Methods("POST")
+	router.HandleFunc("/user/get", getUser).Methods("POST")
 
-		log.Println("サーバー起動 : 8080 port で受信")
+	log.Println("サーバー起動 : 8080 port で受信")
 
-    log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
 type User struct {
-	ID       int    `json:"id"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 type JWT struct {
