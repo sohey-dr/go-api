@@ -97,7 +97,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 認証キー(Emal)のユーザー情報をDBから取得
-	row := db.QueryRow("SELECT * FROM USERS WHERE email=$1;", user.Email)
+	row := Db.QueryRow("SELECT * FROM USERS WHERE email=$1;", user.Email)
 	err := row.Scan(&user.ID, &user.Email, &user.Password)
 
 	if err != nil {
